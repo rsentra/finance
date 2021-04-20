@@ -12,7 +12,7 @@ financedatareader를 이용해 상장종목,시세정보를 읽어온다
 
 import FinanceDataReader as fdr
 
-# 1. 한국거래소 상장종목 전체
+# 1. 한국거래소 상장종목 리스트/시총
 df_krx = fdr.StockListing('KRX') # KRX, KOSPI, KOSDAQ, KONEX 중 하나 
 df_krx.head()
 df_kospi = fdr.StockListing('KOSPI')
@@ -20,7 +20,7 @@ df_marcap = fdr.StockListing('KRX-MARCAP') # 시가총액
 df_del = fdr.StockListing('KRX-DELISTING') # 상폐종목
 
 
-# 2. 일자별 시세 
+# 2. 개별종목 일자별 시세 ---------------------
 # 카카오, 2021년 일자별 시세
 df = fdr.DataReader('035720', '2021')
 df.head(10)
@@ -82,6 +82,16 @@ df_norm = df / df.iloc[0] - 1.0
 df_norm.iloc[-1].sort_values(ascending=False)
 
 
+# 3. 상장종목 리스트로 1) 시총 비교 2)전일대비 하락 ------------------------
+df_sorted = df_marcap.sort_values('Marcap',ascending=False)
+
+# 시총 1000억대
+df_1000 = df_sorted[(df_sorted['Marcap']>=1000) & (df_sorted['Marcap']<=2000)]
+df_1000.query("Market=='KOSPI'")
+
+# 전일 5% 하락
+df_sorted.query("Market=='KOSPI' & Changes / Open < -0.05") 
 
 
-
+url = 'http://kind.krx.co.kr/corpgeneral/corpList.do?method=download&searchType=13'
+df_listing = pd.read_html(url, header=0)[0]
